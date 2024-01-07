@@ -5,6 +5,7 @@ package flow
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -47,15 +48,18 @@ func SetDuplicateCredentials(flow InternalContexter, creds DuplicateCredentialsD
 
 // DuplicateCredentials returns the duplicate credentials data from the flow's internal context.
 func DuplicateCredentials(flow InternalContexter) (*DuplicateCredentialsData, error) {
+	log.Printf("InternalContext %v", flow.GetInternalContext())
 	if flow.GetInternalContext() == nil {
 		flow.EnsureInternalContext()
 	}
 	raw := gjson.GetBytes(flow.GetInternalContext(), internalContextDuplicateCredentialsPath)
+	log.Printf("Raw %v", raw)
 	if !raw.IsObject() {
 		return nil, nil
 	}
 	var creds DuplicateCredentialsData
 	err := json.Unmarshal([]byte(raw.Raw), &creds)
+	log.Printf("Creds %v", creds)
 
 	return &creds, err
 }

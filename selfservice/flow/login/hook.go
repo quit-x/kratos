@@ -6,9 +6,9 @@ package login
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
+	"log"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -128,13 +128,11 @@ func (e *HookExecutor) PostLoginHook(
 	s *session.Session,
 	provider string,
 ) (err error) {
-	log.Printf("Inside PostLoginHook")
 	ctx := r.Context()
 	ctx, span := e.d.Tracer(ctx).Tracer().Start(ctx, "HookExecutor.PostLoginHook")
 	r = r.WithContext(ctx)
 	defer otelx.End(span, &err)
 
-	log.Printf("Near maybeLinkCredentials")
 	if err := e.maybeLinkCredentials(r.Context(), s, i, a); err != nil {
 		return err
 	}
@@ -334,34 +332,29 @@ func (e *HookExecutor) PreLoginHook(w http.ResponseWriter, r *http.Request, a *F
 
 // maybeLinkCredentials links the identity with the credentials of the inner context of the login flow.
 func (e *HookExecutor) maybeLinkCredentials(ctx context.Context, sess *session.Session, ident *identity.Identity, loginFlow *Flow) error {
-	log.Printf("Inside maybeLinkCredentials")
 	lc, err := flow.DuplicateCredentials(loginFlow)
 	log.Printf("Inside maybeLinkCredentials %v", lc)
+	log.Printf("Flow %v %v", loginFlow.ID, loginFlow.IDToken)
 	if err != nil {
 		return err
 	} else if lc == nil {
 		return nil
 	}
 
-	log.Printf("Near checkDuplicateCredentialsIdentifierMatch")
 	if err := e.checkDuplicateCredentialsIdentifierMatch(ctx, ident.ID, lc.DuplicateIdentifier); err != nil {
 		return err
 	}
-
-	log.Printf("Find strategy")
 	strategy, err := e.d.AllLoginStrategies().Strategy(lc.CredentialsType)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Call type check forstrategy")
 	linkableStrategy, ok := strategy.(LinkableStrategy)
 	if !ok {
 		// This should never happen because we check for this in the registration flow.
 		return errors.Errorf("strategy is not linkable: %T", linkableStrategy)
 	}
 
-	log.Printf("Call Link maybeLinkCredentials")
 	if err := linkableStrategy.Link(ctx, ident, lc.CredentialsConfig); err != nil {
 		return err
 	}
