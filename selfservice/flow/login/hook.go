@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-	"log"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -333,8 +332,6 @@ func (e *HookExecutor) PreLoginHook(w http.ResponseWriter, r *http.Request, a *F
 // maybeLinkCredentials links the identity with the credentials of the inner context of the login flow.
 func (e *HookExecutor) maybeLinkCredentials(ctx context.Context, sess *session.Session, ident *identity.Identity, loginFlow *Flow) error {
 	lc, err := flow.DuplicateCredentials(loginFlow)
-	log.Printf("Inside maybeLinkCredentials %v", lc)
-	log.Printf("Flow %v %v", loginFlow.ID, loginFlow.IDToken)
 	if err != nil {
 		return err
 	} else if lc == nil {
